@@ -7,8 +7,9 @@
     background-color: #f4f4f0;
     color: #0a0a0a;
     background-image: 
-      radial-gradient(#d4d4d0 1px, transparent 1px);
-    background-size: 20px 20px;
+      linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
   }
 }
 
@@ -18,12 +19,24 @@
   }
   
   .border-brutal {
-    border: 2px solid #0a0a0a;
-    box-shadow: 4px 4px 0px #0a0a0a;
+    border: 3px solid #0a0a0a;
+    box-shadow: 6px 6px 0px rgba(0,0,0,0.1);
   }
   
   .border-brutal-accent {
-    border: 2px solid #ff3300;
-    box-shadow: 4px 4px 0px #ff3300;
+    border: 3px solid #ff3300;
+    box-shadow: 6px 6px 0px rgba(255,51,0,0.1);
+  }
+  
+  .input-brutal {
+    border: 2px solid #0a0a0a;
+    transition: all 0.2s ease;
+  }
+  
+  .input-brutal:focus {
+    box-shadow: 4px 4px 0px rgba(255,51,0,0.3);
+    border-color: #ff3300;
+    outline: none;
+    transform: translate(-2px, -2px);
   }
 }
