@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #f4f4f0;
+    color: #0a0a0a;
+    background-image: 
+      radial-gradient(#d4d4d0 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+}
+
+@layer utilities {
+  .text-shadow-accent {
+    text-shadow: 2px 2px 0px #ff3300;
+  }
+  
+  .border-brutal {
+    border: 2px solid #0a0a0a;
+    box-shadow: 4px 4px 0px #0a0a0a;
+  }
+  
+  .border-brutal-accent {
+    border: 2px solid #ff3300;
+    box-shadow: 4px 4px 0px #ff3300;
+  }
+}
