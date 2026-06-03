@@ -1,8 +1,16 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wand2, Image as ImageIcon, Zap, RefreshCw, ChevronRight, X, Maximize2, Link as LinkIcon, Clock } from 'lucide-react';
+import { Wand2, Image as ImageIcon, Zap, RefreshCw, ChevronRight, X, Maximize2, Link as LinkIcon, Clock, Download } from 'lucide-react';
 
 type Tab = 'generate' | 'modify';
+
+interface HistoryItem {
+  id: string;
+  url: string;
+  prompt: string;
+  type: 'generate' | 'modify';
+  timestamp: number;
+}
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('generate');
@@ -12,27 +20,43 @@ export default function App() {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [imageSize, setImageSize] = useState('1024x1024');
   const [baseImageUrl, setBaseImageUrl] = useState('');
-  const [historyImages, setHistoryImages] = useState<string[]>([]);
+  const [historyImages, setHistoryImages] = useState<HistoryItem[]>([]);
   const [modifyChange, setModifyChange] = useState('');
   const [modifyKeep, setModifyKeep] = useState('the original composition and main subject layout');
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenItem, setFullscreenItem] = useState<HistoryItem | null>(null);
 
-  const API_KEY = import.meta.env.VITE_API_KEY;
-  const API_URL = import.meta.env.VITE_API_URL;
-  const TEXT_MODEL = import.meta.env.VITE_TEXT_MODEL;
-  const IMAGE_MODEL = import.meta.env.VITE_IMAGE_MODEL;
+  // Configuration Hardcoded
+  const API_URL = 'https://agnes-api.lz-t.top';
+  const TEXT_MODEL = 'agnes-2.0-flash';
+  const IMAGE_MODEL = 'agnes-image-2.1-flash';
+
+  const handleDownload = async (url: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `agnes-image-${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      window.open(url, '_blank');
+    }
+  };
 
   const handleOptimize = async () => {
     if (!prompt) return;
     setIsOptimizing(true);
     try {
-      const response = await fetch(`${API_URL}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${API_KEY}`
-        },
-        body: JSON.stringify({
+      const response = await fetch(`${API_URL}/v1/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
           model: TEXT_MODEL,
           messages: [
             { 
@@ -61,11 +85,10 @@ export default function App() {
     if (!prompt) return;
     setIsGenerating(true);
     try {
-      const response = await fetch(`${API_URL}/images/generations`, {
+      const response = await fetch(`${API_URL}/v1/images/generations`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${API_KEY}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           model: IMAGE_MODEL,
@@ -76,8 +99,15 @@ export default function App() {
       const data = await response.json();
       if (data.data && data.data[0] && data.data[0].url) {
         const newImageUrl = data.data[0].url;
+        const newItem: HistoryItem = {
+          id: Date.now().toString(),
+          url: newImageUrl,
+          prompt: prompt,
+          type: 'generate',
+          timestamp: Date.now()
+        };
         setGeneratedImage(newImageUrl);
-        setHistoryImages(prev => [newImageUrl, ...prev]);
+        setHistoryImages(prev => [newItem, ...prev]);
         setBaseImageUrl(newImageUrl); // Set as default for next modification
       } else {
         throw new Error(data.error?.message || "Unknown API Error");
@@ -100,11 +130,10 @@ export default function App() {
       : modifyChange.trim();
 
     try {
-      const response = await fetch(`${API_URL}/images/generations`, {
+      const response = await fetch(`${API_URL}/v1/images/generations`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${API_KEY}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           model: IMAGE_MODEL,
@@ -119,8 +148,15 @@ export default function App() {
       const data = await response.json();
       if (data.data && data.data[0] && data.data[0].url) {
         const newImageUrl = data.data[0].url;
+        const newItem: HistoryItem = {
+          id: Date.now().toString(),
+          url: newImageUrl,
+          prompt: finalModifyPrompt,
+          type: 'modify',
+          timestamp: Date.now()
+        };
         setGeneratedImage(newImageUrl);
-        setHistoryImages(prev => [newImageUrl, ...prev]);
+        setHistoryImages(prev => [newItem, ...prev]);
         setBaseImageUrl(newImageUrl); // Set as default for next modification
       } else {
         throw new Error(data.error?.message || "Unknown API Error");
@@ -337,12 +373,32 @@ export default function App() {
                 <div className="flex-1 w-full flex items-center justify-center overflow-hidden">
                   <img src={generatedImage} alt="Generated" className="max-w-full max-h-full object-contain border-2 border-brand-dark" />
                 </div>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 w-full">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 w-full flex-wrap">
                   <button 
-                    onClick={() => setIsFullscreen(true)}
+                    onClick={() => {
+                      const currentItem = historyImages.find(item => item.url === generatedImage);
+                      if (currentItem) {
+                        setFullscreenItem(currentItem);
+                      } else {
+                        // Fallback if not found in history for some reason
+                        setFullscreenItem({
+                          id: 'current',
+                          url: generatedImage!,
+                          prompt: prompt || modifyChange,
+                          type: activeTab,
+                          timestamp: Date.now()
+                        });
+                      }
+                    }}
                     className="w-full sm:w-auto font-syne font-bold text-sm sm:text-base uppercase bg-brand-light text-brand-dark px-4 py-3 md:px-6 md:py-3 border-2 border-brand-dark hover:border-brand-accent transition-colors flex items-center justify-center gap-2"
                   >
-                    <Maximize2 size={18} /> View Full Size
+                    <Maximize2 size={18} /> View Details
+                  </button>
+                  <button 
+                    onClick={() => generatedImage && handleDownload(generatedImage)}
+                    className="w-full sm:w-auto font-syne font-bold text-sm sm:text-base uppercase bg-brand-light text-brand-dark px-4 py-3 md:px-6 md:py-3 border-2 border-brand-dark hover:border-brand-accent transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Download size={18} /> Download
                   </button>
                   <button 
                     onClick={() => {
@@ -350,9 +406,9 @@ export default function App() {
                       setActiveTab('modify');
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="w-full sm:w-auto font-syne font-bold text-sm sm:text-base uppercase bg-brand-accent text-brand-light px-4 py-3 md:px-6 md:py-3 border-2 border-brand-dark hover:bg-brand-dark transition-colors"
+                    className="w-full sm:w-auto font-syne font-bold text-sm sm:text-base uppercase bg-brand-accent text-brand-light px-4 py-3 md:px-6 md:py-3 border-2 border-brand-dark hover:bg-brand-dark transition-colors flex items-center justify-center gap-2"
                   >
-                    Modify This
+                    <RefreshCw size={18} /> Modify This
                   </button>
                 </div>
               </motion.div>
@@ -371,26 +427,27 @@ export default function App() {
                 <h3 className="font-syne font-bold text-sm uppercase tracking-wider text-brand-dark">Session History</h3>
               </div>
               <div className="flex gap-4">
-                {historyImages.map((url, index) => (
+                {historyImages.map((item, index) => (
                   <div 
-                    key={`${url}-${index}`} 
+                    key={item.id} 
                     className={`relative flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32 border-2 cursor-pointer group transition-all hover:scale-105 ${
-                      baseImageUrl === url ? 'border-brand-accent' : 'border-brand-dark'
+                      baseImageUrl === item.url ? 'border-brand-accent' : 'border-brand-dark'
                     }`}
                     onClick={() => {
-                      setGeneratedImage(url);
-                      setBaseImageUrl(url);
-                      setActiveTab('modify');
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                      setFullscreenItem(item);
                     }}
                   >
-                    <img src={url} alt={`History ${index}`} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-brand-accent/0 group-hover:bg-brand-accent/20 transition-colors"></div>
-                    {baseImageUrl === url && (
+                    <img src={item.url} alt={`History ${index}`} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-brand-dark/20 group-hover:bg-brand-dark/0 transition-colors"></div>
+                    
+                    {baseImageUrl === item.url && (
                       <div className="absolute top-0 right-0 bg-brand-accent text-brand-light font-mono text-[8px] sm:text-[10px] px-1 font-bold z-10">
                         ACTIVE
                       </div>
                     )}
+                    <div className="absolute top-0 left-0 bg-brand-dark text-brand-light font-mono text-[8px] sm:text-[10px] px-1 font-bold z-10 uppercase">
+                      {item.type}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -399,35 +456,86 @@ export default function App() {
         </div>
       </main>
 
-      {/* FULLSCREEN MODAL */}
+      {/* FULLSCREEN MODAL / DETAILS VIEW */}
       <AnimatePresence>
-        {isFullscreen && generatedImage && (
+        {fullscreenItem && (
           <motion.div 
             initial={{ opacity: 0, backdropFilter: "blur(0px)" }} 
             animate={{ opacity: 1, backdropFilter: "blur(8px)" }} 
             exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-brand-dark/90 p-4 md:p-12 cursor-zoom-out"
-            onClick={() => setIsFullscreen(false)}
+            className="fixed inset-0 z-50 flex flex-col md:flex-row items-center justify-center bg-brand-dark/90 p-4 md:p-12 cursor-zoom-out gap-8"
+            onClick={() => setFullscreenItem(null)}
           >
             <motion.button 
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
               className="absolute top-4 right-4 md:top-8 md:right-8 text-brand-light hover:text-brand-accent transition-colors bg-brand-dark border-2 border-brand-light hover:border-brand-accent p-2 rounded-none z-10"
-              onClick={(e) => { e.stopPropagation(); setIsFullscreen(false); }}
+              onClick={(e) => { e.stopPropagation(); setFullscreenItem(null); }}
             >
               <X size={24} className="md:w-8 md:h-8" />
             </motion.button>
-            <motion.img 
+            
+            {/* Modal Image */}
+            <motion.div 
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              src={generatedImage} 
-              alt="Fullscreen" 
-              className="max-w-full max-h-full object-contain border-4 border-brand-light shadow-2xl cursor-default" 
+              className="flex-1 w-full flex items-center justify-center h-1/2 md:h-full cursor-default"
               onClick={(e) => e.stopPropagation()}
-            />
+            >
+              <img 
+                src={fullscreenItem.url} 
+                alt="Fullscreen" 
+                className="max-w-full max-h-full object-contain border-4 border-brand-light shadow-2xl" 
+              />
+            </motion.div>
+
+            {/* Modal Details Panel */}
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="w-full md:w-96 bg-brand-light border-brutal p-6 flex flex-col gap-6 cursor-default"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div>
+                <h3 className="font-syne font-bold text-2xl uppercase border-b-2 border-brand-dark pb-2 mb-4">Generation Details</h3>
+                <div className="flex gap-2 mb-4">
+                  <span className="bg-brand-dark text-brand-light font-mono text-[10px] px-2 py-1 font-bold uppercase">{fullscreenItem.type}</span>
+                  <span className="border border-brand-dark text-brand-dark font-mono text-[10px] px-2 py-1 font-bold">
+                    {new Date(fullscreenItem.timestamp).toLocaleTimeString()}
+                  </span>
+                </div>
+                
+                <label className="font-mono text-xs font-bold uppercase tracking-wider text-brand-muted">Prompt Context</label>
+                <div className="mt-1 p-3 bg-white border-2 border-brand-dark max-h-48 overflow-y-auto">
+                  <p className="font-mono text-sm leading-relaxed">{fullscreenItem.prompt}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 mt-auto">
+                <button 
+                  onClick={() => handleDownload(fullscreenItem.url)}
+                  className="w-full font-syne font-bold uppercase bg-brand-light text-brand-dark px-4 py-3 border-2 border-brand-dark hover:border-brand-accent transition-colors flex items-center justify-center gap-2"
+                >
+                  <Download size={18} /> Download Image
+                </button>
+                <button 
+                  onClick={() => {
+                    setGeneratedImage(fullscreenItem.url);
+                    setBaseImageUrl(fullscreenItem.url);
+                    setActiveTab('modify');
+                    setFullscreenItem(null);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="w-full font-syne font-bold uppercase bg-brand-accent text-brand-light px-4 py-3 border-2 border-brand-dark hover:bg-brand-dark transition-colors flex items-center justify-center gap-2"
+                >
+                  <RefreshCw size={18} /> Modify This
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
