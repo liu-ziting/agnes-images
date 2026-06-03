@@ -464,78 +464,78 @@ export default function App() {
             animate={{ opacity: 1, backdropFilter: "blur(8px)" }} 
             exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-50 flex flex-col md:flex-row items-center justify-center bg-brand-dark/90 p-4 md:p-12 cursor-zoom-out gap-8"
+            className="fixed inset-0 z-50 flex flex-col md:flex-row items-center justify-center md:justify-center bg-brand-dark/95 p-0 md:p-12 overflow-y-auto md:overflow-hidden gap-0 md:gap-8"
             onClick={() => setFullscreenItem(null)}
           >
             <motion.button 
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="absolute top-4 right-4 md:top-8 md:right-8 text-brand-light hover:text-brand-accent transition-colors bg-brand-dark border-2 border-brand-light hover:border-brand-accent p-2 rounded-none z-10"
+              className="fixed md:absolute top-4 right-4 md:top-8 md:right-8 text-brand-light hover:text-brand-accent transition-colors bg-brand-dark/80 backdrop-blur-sm border-2 border-brand-light hover:border-brand-accent p-2 rounded-none z-[60]"
               onClick={(e) => { e.stopPropagation(); setFullscreenItem(null); }}
             >
               <X size={24} className="md:w-8 md:h-8" />
             </motion.button>
             
-            {/* Modal Image */}
-            <motion.div 
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="flex-1 w-full flex items-center justify-center h-1/2 md:h-full cursor-default"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <img 
-                src={fullscreenItem.url} 
-                alt="Fullscreen" 
-                className="max-w-full max-h-full object-contain border-4 border-brand-light shadow-2xl" 
-              />
-            </motion.div>
+            {/* Modal Image - Scrollable container on mobile */}
+            <div className="w-full flex flex-col md:flex-row items-center md:justify-center min-h-min md:h-full py-16 md:py-0 px-4 md:px-0" onClick={(e) => e.stopPropagation()}>
+              <motion.div 
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="w-full md:flex-1 flex items-center justify-center md:h-full cursor-default mb-6 md:mb-0"
+              >
+                <img 
+                  src={fullscreenItem.url} 
+                  alt="Fullscreen" 
+                  className="max-w-full max-h-[60vh] md:max-h-full object-contain border-4 border-brand-light shadow-2xl" 
+                />
+              </motion.div>
 
-            {/* Modal Details Panel */}
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="w-full md:w-96 bg-brand-light border-brutal p-6 flex flex-col gap-6 cursor-default"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div>
-                <h3 className="font-syne font-bold text-2xl uppercase border-b-2 border-brand-dark pb-2 mb-4">Generation Details</h3>
-                <div className="flex gap-2 mb-4">
-                  <span className="bg-brand-dark text-brand-light font-mono text-[10px] px-2 py-1 font-bold uppercase">{fullscreenItem.type}</span>
-                  <span className="border border-brand-dark text-brand-dark font-mono text-[10px] px-2 py-1 font-bold">
-                    {new Date(fullscreenItem.timestamp).toLocaleTimeString()}
-                  </span>
+              {/* Modal Details Panel */}
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+                className="w-full md:w-96 bg-brand-light border-brutal p-6 flex flex-col gap-6 cursor-default flex-shrink-0"
+              >
+                <div>
+                  <h3 className="font-syne font-bold text-xl sm:text-2xl uppercase border-b-2 border-brand-dark pb-2 mb-4">Generation Details</h3>
+                  <div className="flex gap-2 mb-4">
+                    <span className="bg-brand-dark text-brand-light font-mono text-[10px] px-2 py-1 font-bold uppercase">{fullscreenItem.type}</span>
+                    <span className="border border-brand-dark text-brand-dark font-mono text-[10px] px-2 py-1 font-bold">
+                      {new Date(fullscreenItem.timestamp).toLocaleTimeString()}
+                    </span>
+                  </div>
+                  
+                  <label className="font-mono text-xs font-bold uppercase tracking-wider text-brand-muted">Prompt Context</label>
+                  <div className="mt-1 p-3 bg-white border-2 border-brand-dark max-h-32 sm:max-h-48 overflow-y-auto">
+                    <p className="font-mono text-xs sm:text-sm leading-relaxed">{fullscreenItem.prompt}</p>
+                  </div>
                 </div>
-                
-                <label className="font-mono text-xs font-bold uppercase tracking-wider text-brand-muted">Prompt Context</label>
-                <div className="mt-1 p-3 bg-white border-2 border-brand-dark max-h-48 overflow-y-auto">
-                  <p className="font-mono text-sm leading-relaxed">{fullscreenItem.prompt}</p>
-                </div>
-              </div>
 
-              <div className="flex flex-col gap-3 mt-auto">
-                <button 
-                  onClick={() => handleDownload(fullscreenItem.url)}
-                  className="w-full font-syne font-bold uppercase bg-brand-light text-brand-dark px-4 py-3 border-2 border-brand-dark hover:border-brand-accent transition-colors flex items-center justify-center gap-2"
-                >
-                  <Download size={18} /> Download Image
-                </button>
-                <button 
-                  onClick={() => {
-                    setGeneratedImage(fullscreenItem.url);
-                    setBaseImageUrl(fullscreenItem.url);
-                    setActiveTab('modify');
-                    setFullscreenItem(null);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className="w-full font-syne font-bold uppercase bg-brand-accent text-brand-light px-4 py-3 border-2 border-brand-dark hover:bg-brand-dark transition-colors flex items-center justify-center gap-2"
-                >
-                  <RefreshCw size={18} /> Modify This
-                </button>
-              </div>
-            </motion.div>
+                <div className="flex flex-col gap-3 mt-auto">
+                  <button 
+                    onClick={() => handleDownload(fullscreenItem.url)}
+                    className="w-full font-syne font-bold text-sm sm:text-base uppercase bg-brand-light text-brand-dark px-4 py-3 border-2 border-brand-dark hover:border-brand-accent transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Download size={18} /> Download Image
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setGeneratedImage(fullscreenItem.url);
+                      setBaseImageUrl(fullscreenItem.url);
+                      setActiveTab('modify');
+                      setFullscreenItem(null);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="w-full font-syne font-bold text-sm sm:text-base uppercase bg-brand-accent text-brand-light px-4 py-3 border-2 border-brand-dark hover:bg-brand-dark transition-colors flex items-center justify-center gap-2"
+                  >
+                    <RefreshCw size={18} /> Modify This
+                  </button>
+                </div>
+              </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
