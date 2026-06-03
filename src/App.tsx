@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wand2, Image as ImageIcon, Zap, RefreshCw, ChevronRight, X, Maximize2, Link as LinkIcon, Clock, Download, Info, Globe } from 'lucide-react';
+import { Wand2, Image as ImageIcon, Zap, RefreshCw, ChevronRight, X, Maximize2, Link as LinkIcon, Clock, Download, Info, Globe, Github } from 'lucide-react';
 
 type Tab = 'generate' | 'modify';
 type Lang = 'en' | 'zh';
@@ -44,7 +44,7 @@ const t = {
     active: 'ACTIVE'
   },
   zh: {
-    subtitle: '视觉合成单元 // 精简版',
+    subtitle: 'Agnes Image 2.1 Flash',
     status: '系统状态: 在线',
     tab_generate: '01. 图像生成',
     tab_modify: '02. 图像修改',
@@ -91,7 +91,7 @@ interface HistoryItem {
 }
 
 export default function App() {
-  const [lang, setLang] = useState<Lang>('zh'); // 默认中文
+  const [lang, setLang] = useState<Lang>('en'); // 默认英文
   const [activeTab, setActiveTab] = useState<Tab>('generate');
   const [prompt, setPrompt] = useState('');
   const [isOptimizing, setIsOptimizing] = useState(false);
@@ -260,23 +260,23 @@ export default function App() {
       <header className="w-full max-w-7xl flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 border-b-4 border-brand-dark pb-4">
         <div>
           <h1 className="font-syne font-extrabold text-4xl sm:text-5xl md:text-7xl tracking-tighter uppercase leading-none">
-            AGNES<span className="text-brand-accent">_</span>OPS
+            AGNES<span className="text-brand-accent">_</span>AI
           </h1>
           <p className="font-mono text-xs sm:text-sm mt-2 font-bold text-brand-muted uppercase tracking-widest">
             {t[lang].subtitle}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-4 md:mt-0">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-4 md:mt-0 h-8 sm:h-9">
           <button 
             onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
-            className="flex items-center gap-1 text-[10px] sm:text-xs font-mono border-2 border-brand-dark px-2 py-1 bg-brand-light text-brand-dark hover:bg-brand-dark hover:text-brand-light transition-colors font-bold cursor-pointer"
+            className="h-full flex items-center justify-center gap-1 text-[10px] sm:text-xs font-mono border-2 border-brand-dark px-3 bg-brand-light text-brand-dark hover:bg-brand-dark hover:text-brand-light transition-colors font-bold cursor-pointer"
           >
             <Globe size={14} /> {lang === 'en' ? '中文' : 'EN'}
           </button>
-          <div className="text-[10px] sm:text-xs font-mono border border-brand-dark px-2 py-1 bg-brand-dark text-brand-light uppercase">
+          <div className="h-full flex items-center justify-center text-[10px] sm:text-xs font-mono border-2 border-brand-dark px-3 bg-brand-dark text-brand-light uppercase">
             {t[lang].status}
           </div>
-          <div className="text-[10px] sm:text-xs font-mono border border-brand-dark px-2 py-1 bg-brand-accent text-brand-dark font-bold">
+          <div className="h-full flex items-center justify-center text-[10px] sm:text-xs font-mono border-2 border-brand-dark px-3 bg-brand-accent text-brand-dark font-bold">
             V 2.0.0
           </div>
         </div>
@@ -547,6 +547,21 @@ export default function App() {
           )}
         </div>
       </main>
+
+      {/* FOOTER */}
+      <footer className="w-full max-w-7xl mt-8 md:mt-12 pt-6 border-t-4 border-brand-dark flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="font-mono text-xs font-bold uppercase tracking-widest text-brand-dark">
+          Created by <span className="text-brand-accent">liuziting</span>
+        </div>
+        <a 
+          href="https://github.com/liu-ziting/agnes-images" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 font-syne font-bold uppercase text-sm border-2 border-brand-dark px-4 py-2 hover:bg-brand-dark hover:text-brand-light transition-colors"
+        >
+          <Github size={16} /> View on GitHub
+        </a>
+      </footer>
 
       {/* FULLSCREEN MODAL / DETAILS VIEW */}
       <AnimatePresence>
