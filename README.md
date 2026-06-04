@@ -1,85 +1,212 @@
-# AGNES AI - Image Generation & Modification Interface
+# AGNES Images
 
-这是一个基于 **Agnes-2.0-Flash** 和 **Agnes-Image-2.1-Flash** 模型构建的现代、粗野主义（Brutalism）风格的 AI 图像生成与编辑 Web 平台。
+一个基于 `React + Vite + TypeScript` 构建的 Agnes AI 图像生成与改图前端工作台。
 
-本项目提供了一个完整的端到端工作流：从自然语言提示词（Prompt）的 AI 智能扩写优化，到高信息密度图像的生成，再到基于历史版本的局部定向图生图（Image-to-Image）修改。
+当前版本已经不是最初的单文件 Demo，而是围绕以下工作流重构过的可维护前端：
 
-## ✨ 核心特性 (Features)
+- 文本提示词优化
+- 多候选提示词生成
+- 文生图
+- 图生图
+- 本地底图上传 / 粘贴截图
+- 历史记录持久化
+- 基于历史图恢复参数继续创作
 
-*   **🎨 粗野主义 UI 设计 (Brutalist UI)**
-    *   极具辨识度的黑白高对比度设计，点缀霓虹橙色高光。
-    *   使用 `Syne` 标题字体与 `JetBrains Mono` 等宽字体，呈现工业级排版美学。
-    *   深度适配移动端，提供平滑的响应式布局与全屏大图预览沉浸体验。
-*   **🧠 AI 提示词优化 (Prompt Optimization)**
-    *   接入 `agnes-2.0-flash` 大语言模型。
-    *   只需输入简单的草稿，即可一键扩写为富含画面细节、光影、构图的专业级生图提示词。
-*   **🖼️ 高清图像生成 (Text-to-Image)**
-    *   接入 `agnes-image-2.1-flash` 图像大模型。
-    *   支持自定义模型版本、图片比例（1:1, 16:9, 9:16 等）。
-*   **🔄 图生图高级编辑 (Image-to-Image)**
-    *   支持粘贴在线图片 URL 作为底图。
-    *   独创的 **"What to change" + "What to keep"** 双输入表单，引导用户写出符合模型最佳实践的图生图指令。
-*   **⏱️ 历史会话流 (Session History)**
-    *   自动记录您在当前会话中生成和修改的所有图片。
-    *   可视化的底部历史缩略图画廊，支持一键点击回溯。
-    *   随时可以选中任意一张历史图片作为新的底图，进行无数次的叠代修改（Modify This）。
-*   **🔒 安全的 API 代理 (Cloudflare Worker Proxy)**
-    *   内置了 Cloudflare Worker 代理代码，防止前端暴露真实 API Key，确保生产环境绝对安全。
+## 项目定位
 
-## 🛠️ 技术栈 (Tech Stack)
+这个项目聚焦于一个简单直接的 AI 创作流程：
 
-*   **前端框架**: React 18 + Vite
-*   **类型语言**: TypeScript
-*   **样式方案**: Tailwind CSS
-*   **图标库**: Lucide React
-*   **动画引擎**: Framer Motion
-*   **后端代理**: Cloudflare Workers (JavaScript)
+1. 输入草稿提示词
+2. 根据当前语言环境生成对应语言的优化提示词或候选提示词
+3. 调用 Agnes 图片接口生成图片
+4. 基于生成结果或本地图片继续改图
+5. 在历史记录中回看、恢复、继续分支创作
 
-## 🚀 快速开始 (Getting Started)
+## 当前功能
 
-### 1. 本地开发运行
+### 1. 文本生成能力
+
+- 支持提示词一键优化
+- 支持生成 3 个不同方向的提示词候选
+- 根据当前界面语言输出对应语言的提示词
+- 支持负面提示词输入
+
+### 2. 图片生成能力
+
+- 支持 Agnes 文生图接口
+- 支持常用尺寸切换
+- 支持从候选提示词直接继续生成
+
+### 3. 改图能力
+
+- 支持通过图片 URL 改图
+- 支持本地上传底图
+- 支持粘贴截图作为底图
+- 支持底图预览
+- 支持快捷改图模板
+- 支持 `需要修改什么 / 需要保留什么 / 需要避免什么` 的改图输入方式
+
+### 4. 历史记录能力
+
+- 历史记录保存在浏览器本地
+- 支持查看历史缩略图时间轴
+- 支持选中历史项后恢复参数
+- 支持从任意历史图继续改图
+- 支持删除单条历史记录
+- 支持清空全部历史记录
+
+### 5. 界面体验
+
+- 粗野主义风格 UI
+- 中英文双语切换
+- 全屏预览与详情弹层
+- 移动端可用的自适应布局
+
+## 当前目录结构
+
+项目当前真实使用的 `src` 目录如下：
+
+```text
+src/
+├── App.tsx
+├── main.tsx
+├── index.css
+├── components/
+│   ├── FullscreenModal.tsx
+│   ├── GeneratePanel.tsx
+│   ├── Header.tsx
+│   ├── HistoryGallery.tsx
+│   ├── ModifyPanel.tsx
+│   ├── OutputPanel.tsx
+│   ├── PromptVariants.tsx
+│   ├── SizeSelect.tsx
+│   └── TabNav.tsx
+├── constants/
+│   ├── i18n.ts
+│   └── options.ts
+├── services/
+│   └── agnesApi.ts
+├── utils/
+│   ├── download.ts
+│   ├── files.ts
+│   └── storage.ts
+└── types.ts
+```
+
+### 目录说明
+
+- `App.tsx`
+  - 页面容器层，负责状态管理、交互编排、请求触发
+- `components/`
+  - 展示组件层，负责表单、历史区、弹层、输出区等 UI
+- `constants/`
+  - 静态配置和中英文文案
+- `services/`
+  - Agnes API 请求封装
+- `utils/`
+  - 下载、文件读取、本地存储等通用工具
+- `types.ts`
+  - 全局类型定义
+
+## 技术栈
+
+- React 18
+- Vite 5
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+- Lucide React
+
+## 本地开发
+
+安装依赖：
 
 ```bash
-# 安装依赖
 npm install
+```
 
-# 启动本地开发服务器
+启动开发环境：
+
+```bash
 npm run dev
 ```
 
-打开浏览器访问 `http://localhost:5173` 即可预览。
+构建生产版本：
 
-*(注意：当前代码中硬编码了线上的代理接口 `https://agnes-api.lz-t.top`，本地开发可直接运行而无需配置 Key)*
-
-### 2. 部署前端到 Cloudflare Pages
-
-本项目非常适合部署在 Cloudflare Pages 上，以获得全球 CDN 加速。
-
-**方式 A: 使用 Wrangler CLI 快速部署**
 ```bash
-# 构建前端产物
 npm run build
-
-# 使用 wrangler 部署 dist 目录
-npx wrangler pages deploy dist
 ```
 
-**方式 B: 通过 GitHub 自动部署**
-1. 将代码 Push 到您的 GitHub 仓库。
-2. 在 Cloudflare Dashboard 中选择 **Workers & Pages** -> **Create** -> **Pages** -> **Connect to Git**。
-3. 选择该仓库，配置构建命令为 `npm run build`，输出目录为 `dist`。
-4. 点击 Deploy 即可。
+本地预览构建产物：
 
-## 🔐 关于 API 密钥与后端代理
+```bash
+npm run preview
+```
 
-为了保护您的 `AGNES_API_KEY` 不被泄露，本项目根目录下包含了一个 `worker.js` 文件。
+## 接口说明
 
-它是一个 Cloudflare Worker 脚本，用于拦截前端的请求，附加上您的真实 API Key，并转发给官方的 `https://apihub.agnes-ai.com`。
+当前前端使用固定代理地址：
 
-目前前端 `src/App.tsx` 中已经硬编码指向了代理地址。如果您需要自己部署这套代理，可以：
-1. 修改 `worker.js` 中的 `AGNES_API_KEY` 为您的真实 Key。
-2. 运行 `npx wrangler deploy worker.js --name agnes-api-proxy`。
-3. 将 `src/App.tsx` 中的 `API_URL` 替换为您自己的代理地址并重新打包前端。
+```text
+https://agnes-api.lz-t.top
+```
 
-## 📄 许可证 (License)
-MIT License
+在代码中对应位置为：
+
+- `src/constants/options.ts` 中的 `API_URL`
+
+当前封装的接口包括：
+
+- `optimizePrompt()`
+- `generatePromptVariants()`
+- `generateImage()`
+- `modifyImage()`
+
+都位于：
+
+- `src/services/agnesApi.ts`
+
+## 重要说明
+
+### 1. 提示词语言
+
+提示词优化和提示词候选会跟随当前界面语言：
+
+- 中文界面输出中文提示词
+- 英文界面输出英文提示词
+
+### 2. 本地图片改图
+
+当前本地上传底图使用的是 `data URL` 方案，也就是前端直接把图片转成 Base64 后作为底图传给改图接口。
+
+这意味着：
+
+- 如果你的代理层或上游接口支持 `data URL`，本地改图可以直接使用
+- 如果你的代理层不支持，则需要补一个图片上传接口，把本地图片先转成可访问 URL 再调用改图
+
+相关代码位置：
+
+- `src/utils/files.ts`
+- `src/components/ModifyPanel.tsx`
+- `src/App.tsx`
+
+### 3. 历史记录存储
+
+历史记录当前使用浏览器 `localStorage` 保存，适合本地单用户使用，不适合多人共享或云端同步。
+
+相关代码位置：
+
+- `src/utils/storage.ts`
+
+## 后续可以继续扩展的方向
+
+- 接入真实的图片上传接口，替代前端 `data URL`
+- 批量出图
+- 版本树可视化
+- 收藏 / 项目管理
+- 参数导出与分享链接
+- 更细的高级生成参数
+
+## License
+
+MIT
