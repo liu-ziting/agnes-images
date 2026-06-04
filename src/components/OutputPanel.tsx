@@ -21,62 +21,75 @@ export function OutputPanel({
   onModifyThis
 }: OutputPanelProps) {
   return (
-    <div className="relative flex min-h-[400px] flex-1 items-center justify-center border-brutal bg-brand-dark p-2 md:min-h-[500px]">
-      <div className="absolute left-4 top-0 z-10 -translate-y-1/2 bg-brand-accent px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-brand-light sm:text-xs">
-        {text.out_canvas}
+    <section className="border-brutal bg-white p-4 sm:p-5">
+      <div className="flex flex-col gap-1 border-b-2 border-brand-dark pb-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="font-syne text-xl font-bold uppercase sm:text-2xl">{text.output_title}</h2>
+          <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-brand-muted sm:text-xs">
+            {text.output_hint}
+          </p>
+        </div>
+        <div className="border border-brand-dark bg-brand-light px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-wider text-brand-dark sm:text-xs">
+          {generatedImage ? text.result_ready : text.result_empty_title}
+        </div>
       </div>
 
-      {isGenerating ? (
-        <div className="flex flex-col items-center gap-4 text-brand-light">
-          <RefreshCw className="animate-spin text-brand-accent" size={40} />
-          <span className="animate-pulse px-4 text-center font-mono text-xs uppercase tracking-widest sm:text-sm">
-            {text.out_wait}
-          </span>
-        </div>
-      ) : generatedImage ? (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="mt-4 flex h-full w-full flex-col items-center justify-center gap-4 p-2 sm:p-4 md:p-8"
-        >
-          <div className="flex w-full flex-1 items-center justify-center overflow-hidden">
-            <img
-              src={generatedImage}
-              alt="Generated"
-              className="max-h-full max-w-full border-2 border-brand-dark object-contain"
-            />
+      <div className="mt-4 border-2 border-brand-dark bg-brand-dark p-3 sm:p-4">
+        {isGenerating ? (
+          <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 text-brand-light md:min-h-[500px]">
+            <RefreshCw className="animate-spin text-brand-accent" size={40} />
+            <span className="animate-pulse px-4 text-center font-mono text-xs uppercase tracking-widest sm:text-sm">
+              {text.out_wait}
+            </span>
           </div>
-          <div className="flex w-full flex-wrap items-center justify-center gap-2 sm:flex-row sm:gap-4">
-            <button
-              onClick={onOpenDetails}
-              className="flex w-full items-center justify-center gap-2 border-2 border-brand-dark bg-brand-light px-4 py-3 font-syne text-sm font-bold uppercase text-brand-dark transition-colors hover:border-brand-accent sm:w-auto sm:text-base md:px-6"
-            >
-              <Maximize2 size={18} />
-              {text.btn_details}
-            </button>
-            <button
-              onClick={onDownload}
-              className="flex w-full items-center justify-center gap-2 border-2 border-brand-dark bg-brand-light px-4 py-3 font-syne text-sm font-bold uppercase text-brand-dark transition-colors hover:border-brand-accent sm:w-auto sm:text-base md:px-6"
-            >
-              <Download size={18} />
-              {text.btn_down}
-            </button>
-            <button
-              onClick={onModifyThis}
-              className="flex w-full items-center justify-center gap-2 border-2 border-brand-dark bg-brand-accent px-4 py-3 font-syne text-sm font-bold uppercase text-brand-light transition-colors hover:bg-brand-dark sm:w-auto sm:text-base md:px-6"
-            >
-              <RefreshCw size={18} />
-              {text.btn_mod_this}
-            </button>
+        ) : generatedImage ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex min-h-[360px] flex-col gap-4 md:min-h-[500px]"
+          >
+            <div className="flex flex-1 items-center justify-center overflow-hidden bg-[#111111] p-2 sm:p-4">
+              <img
+                src={generatedImage}
+                alt="Generated"
+                className="max-h-full max-w-full border-2 border-brand-dark bg-white object-contain"
+              />
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <button
+                onClick={onOpenDetails}
+                className="flex items-center justify-center gap-2 border-2 border-brand-dark bg-brand-light px-4 py-3 font-syne text-sm font-bold uppercase text-brand-dark transition-colors hover:border-brand-accent"
+              >
+                <Maximize2 size={18} />
+                {text.btn_details}
+              </button>
+              <button
+                onClick={onDownload}
+                className="flex items-center justify-center gap-2 border-2 border-brand-dark bg-brand-light px-4 py-3 font-syne text-sm font-bold uppercase text-brand-dark transition-colors hover:border-brand-accent"
+              >
+                <Download size={18} />
+                {text.btn_down}
+              </button>
+              <button
+                onClick={onModifyThis}
+                className="flex items-center justify-center gap-2 border-2 border-brand-dark bg-brand-accent px-4 py-3 font-syne text-sm font-bold uppercase text-brand-light transition-colors hover:bg-brand-dark"
+              >
+                <RefreshCw size={18} />
+                {text.btn_mod_this}
+              </button>
+            </div>
+          </motion.div>
+        ) : (
+          <div className="flex min-h-[360px] flex-col items-center justify-center border-2 border-dashed border-brand-muted/30 bg-[#111111] px-6 text-center md:min-h-[500px]">
+            <p className="font-syne text-xl font-bold uppercase text-brand-light sm:text-2xl">
+              {text.result_empty_title}
+            </p>
+            <p className="mt-3 max-w-md font-mono text-[11px] uppercase tracking-wider text-brand-muted sm:text-xs">
+              {text.result_empty_hint}
+            </p>
           </div>
-        </motion.div>
-      ) : (
-        <div className="m-2 flex h-full w-full items-center justify-center border-2 border-dashed border-brand-muted/30 sm:m-4">
-          <span className="px-4 text-center font-mono text-xs uppercase tracking-widest text-brand-muted sm:text-sm">
-            {text.out_empty}
-          </span>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </section>
   );
 }

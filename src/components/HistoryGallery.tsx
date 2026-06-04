@@ -36,14 +36,15 @@ export function HistoryGallery({
     historyImages.find((item) => item.id === selectedItemId) ?? historyImages[0];
 
   const previewText = selectedItem.changeInstructions || selectedItem.prompt;
+  const historyCountLabel = `${historyImages.length} ${text.history_count_suffix}`;
 
   return (
-    <div className="mt-4 overflow-x-auto border-brutal bg-brand-light p-4">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+    <section className="mt-4 border-brutal bg-brand-light p-4 sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b-2 border-brand-dark pb-4">
         <div>
           <div className="flex items-center gap-2">
             <Clock size={16} className="text-brand-dark" />
-            <h3 className="font-syne text-sm font-bold uppercase tracking-wider text-brand-dark">
+            <h3 className="font-syne text-lg font-bold uppercase tracking-wider text-brand-dark">
               {text.history}
             </h3>
           </div>
@@ -54,29 +55,34 @@ export function HistoryGallery({
             {text.history_restore_hint}
           </p>
         </div>
-        <button
-          onClick={onClearHistory}
-          className="flex items-center gap-2 border-2 border-brand-dark px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-wider text-brand-dark transition-colors hover:bg-brand-dark hover:text-brand-light sm:text-xs"
-        >
-          <Trash2 size={14} />
-          {text.clear_history}
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="border border-brand-dark bg-white px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-wider text-brand-dark sm:text-xs">
+            {historyCountLabel}
+          </div>
+          <button
+            onClick={onClearHistory}
+            className="flex items-center gap-2 border-2 border-brand-dark px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-wider text-brand-dark transition-colors hover:bg-brand-dark hover:text-brand-light sm:text-xs"
+          >
+            <Trash2 size={14} />
+            {text.clear_history}
+          </button>
+        </div>
       </div>
 
-      <div className="mb-3 flex items-center gap-2">
+      <div className="mt-4 flex items-center gap-2">
         <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-brand-muted sm:text-xs">
           {text.history_timeline}
         </span>
       </div>
 
-      <div className="flex gap-3">
+      <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
         {historyImages.map((item, index) => (
           <button
             key={item.id}
             type="button"
-            className={`group relative h-24 w-24 flex-shrink-0 overflow-hidden border-2 bg-white transition-all hover:translate-y-[2px] sm:h-28 sm:w-28 ${
+            className={`group relative h-24 w-24 flex-shrink-0 overflow-hidden border-2 bg-white text-left transition-all hover:-translate-y-0.5 sm:h-28 sm:w-28 ${
               selectedItem.id === item.id || baseImageUrl === item.url
-                ? 'border-brand-accent'
+                ? 'border-brand-accent shadow-[4px_4px_0px_rgba(255,51,0,0.12)]'
                 : 'border-brand-dark'
             }`}
             onClick={() => onSelectItem(item)}
@@ -96,18 +102,18 @@ export function HistoryGallery({
             </button>
 
             {baseImageUrl === item.url && (
-              <div className="absolute bottom-0 right-0 z-10 bg-brand-accent px-1 font-mono text-[8px] font-bold text-brand-light sm:text-[10px]">
+              <div className="absolute bottom-0 right-0 z-10 bg-brand-accent px-1.5 py-0.5 font-mono text-[8px] font-bold text-brand-light sm:text-[10px]">
                 {text.active}
               </div>
             )}
-            <div className="absolute left-0 top-0 z-10 bg-brand-dark px-1 font-mono text-[8px] font-bold uppercase text-brand-light sm:text-[10px]">
+            <div className="absolute left-0 top-0 z-10 bg-brand-dark px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase text-brand-light sm:text-[10px]">
               {item.type}
             </div>
           </button>
         ))}
       </div>
 
-      <div className="mt-4 border-2 border-brand-dark bg-white p-3 sm:p-4">
+      <div className="mt-4 border-2 border-brand-dark bg-white p-4">
         <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h4 className="font-syne text-base font-bold uppercase sm:text-lg">
@@ -141,7 +147,7 @@ export function HistoryGallery({
               {text.det_keep}: {selectedItem.keepInstructions}
             </p>
           )}
-          <div className="flex flex-wrap gap-2">
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
             <button
               onClick={() => onOpenItem(selectedItem)}
               className="flex items-center gap-2 border-2 border-brand-dark px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-wider text-brand-dark transition-colors hover:bg-brand-dark hover:text-brand-light sm:text-xs"
@@ -173,6 +179,6 @@ export function HistoryGallery({
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
